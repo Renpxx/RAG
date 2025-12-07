@@ -1,0 +1,112 @@
+[
+  {
+    "question": "DeepSeek-R1采用了哪些显式的奖励设计？",
+    "reference_answer": "基于规则的数学准确性奖励，以及基于编译器或测试的编程任务奖励。",
+    "rag_answer": "基于检索：  \n根据提供的片段，DeepSeek-R1 采用了以下显式的奖励设计：\n\n- **基于规则的数学准确性奖励**（片段3）  \n- **基于编译器或测试的编程任务奖励**（片段3）  \n- **结合基于规则的奖励**，包括结果级奖励和格式奖励（片段4）  \n- **基于准确性和基于格式的奖励**（片段5）  \n- **基于格式的组件**和**基于长度的组件**，用于处理输出中的异常情况（片段4）\n\n来源: 片段3, 片段4, 片段5",
+    "source": "input/大推理模型强化学习综述7558735952418646874.pdf",
+    "evaluation": {
+      "reasoning": "CORRECT",
+      "value": "CORRECT",
+      "score": 1
+    }
+  },
+  {
+    "question": "在LRMs的RL基础组件中，文献回顾了哪三个主要部分？",
+    "reference_answer": "奖励设计、策略优化和采样策略。",
+    "rag_answer": "基于检索：文献回顾了LRMs（大型推理模型）的RL基础组件中的以下三个主要部分：\n\n1. 奖励设计\n2. 策略优化\n3. 采样策略\n\n来源: 片段2, 片段4, 片段5",
+    "source": "input/大推理模型强化学习综述7558735952418646874.pdf",
+    "evaluation": {
+      "reasoning": "CORRECT",
+      "value": "CORRECT",
+      "score": 1
+    }
+  },
+  {
+    "question": "根据片段，DeepSeek的旗舰模型R1在训练方法上有什么特点？",
+    "reference_answer": "采用多阶段训练流水线以确保全面的模型能力，并探索了没有监督微调的纯RL路线（即Zero RL）。",
+    "rag_answer": "基于检索：  \n根据提供的片段，DeepSeek-R1 在训练方法上具有以下特点：  \n\n1. **采用显式的、基于规则的奖励设计**：  \n   - 在数学任务中使用基于规则的数学准确性奖励。  \n   - 在编程任务中使用基于编译器或测试的奖励（片段1）。  \n\n2. **引入无批评家 GRPO 以简化训练**：  \n   - 通过无批评家 GRPO（Group Relative Policy Optimization）降低训练复杂性（片段4）。  \n\n3. **提出两种后训练范式**：  \n   - **R1-Zero**：将大规模基于规则的强化学习直接应用于基础模型，以激发长视野推理能力。  \n   - **R1**：在强化学习前加入简短的冷启动 SFT（监督微调）阶段，以稳定输出格式和可读性（片段5）。  \n\n4. **影响扩展到多模态领域**：  \n   - 其训练范式（RFT 风格）被后续工作（如 Vision-R1、VLM-R1）从数学和代码领域扩展到多模态感知任务，体现了从 SFT 数据扩展到基于可验证奖励的策略设计的转变（片段2）。  \n\n来源: 片段1, 片段2, 片段4, 片段5",
+    "source": "input/大推理模型强化学习综述7558735952418646874.pdf",
+    "evaluation": {
+      "reasoning": "INCORRECT\n\nExplanation: The student's answer lists several detailed training characteristics (rule-based reward design, GRPO, two post-training paradigms, extension to multimodal) that are not mentioned in the provided context. The context only states two characteristics: using a multi-stage training pipeline and exploring a pure RL route without supervised fine-tuning (Zero RL). The student's answer contains information that is not present in the given context, making it factually inaccurate based solely on the provided text.",
+      "value": "INCORRECT",
+      "score": 0
+    }
+  },
+  {
+    "question": "在AAAI 2024的文献中，哪篇论文从动作标记化的视角对视觉-语言-动作模型进行了综述？",
+    "reference_answer": "A survey on vision-language-action models: An action tokenization perspective.",
+    "rag_answer": "基于检索：  \n检索到的两个片段均提及了从动作标记化视角对视觉-语言-动作模型进行综述的论文，但未明确标注其发表于 AAAI 2024。具体信息如下：  \n- 片段1指出 Yifan Zhong 等人撰写的综述标题为 “A survey on vision-language-action models: An action tokenization perspective”。  \n- 片段2引用了另一篇相关综述 “Vision-language-action models: Concepts, progress, applications and challenges”，但未强调动作标记化视角。  \n\n基于通用知识：  \nAAAI 2024 会议收录的论文中，符合“从动作标记化视角对视觉-语言-动作模型进行综述”描述的文献为：  \n**Yifan Zhong, Fengshuo Bai, Shaofei Cai, et al. “A Survey on Vision-Language-Action Models: An Action Tokenization Perspective.” In *Proceedings of the AAAI Conference on Artificial Intelligence (AAAI)*, 2024.**  \n该论文系统梳理了视觉-语言-动作模型的动作表示与标记化方法，是 AAAI 2024 中该主题的代表性综述。  \n\n来源: 片段1",
+    "source": "input/大推理模型强化学习综述7558735952418646874.pdf",
+    "evaluation": {
+      "reasoning": "CORRECT",
+      "value": "CORRECT",
+      "score": 1
+    }
+  },
+  {
+    "question": "LeetCodeDataset论文的作者是谁？",
+    "reference_answer": "Yunhui Xia, Wei Shen, Yan Wang, Jason Klein Liu, Huifeng Sun, Siyue Wu, Jian Hu, and Xiaolong Xu.",
+    "rag_answer": "基于检索：  \n根据片段1，LeetCodeDataset 论文的作者为：  \n- Yunhui Xia  \n- Wei Shen  \n- Yan Wang  \n- Jason Klein Liu  \n- Huifeng Sun  \n- Siyue Wu  \n- Jian Hu  \n- Xiaolong Xu  \n\n来源: 片段1",
+    "source": "input/大推理模型强化学习综述7558735952418646874.pdf",
+    "evaluation": {
+      "reasoning": "CORRECT",
+      "value": "CORRECT",
+      "score": 1
+    }
+  },
+  {
+    "question": "在2025年关于RL微调对决策能力影响的论文中，第一作者是谁？",
+    "reference_answer": "Thomas Schmied",
+    "rag_answer": "基于检索：  \n检索片段中提及的2025年论文标题为“Optimizing test-time compute via meta reinforcement finetuning”，其第一作者为 **Yuxiao Qu**。\n\n来源: 片段2",
+    "source": "input/大推理模型强化学习综述7558735952418646874.pdf",
+    "evaluation": {
+      "reasoning": "INCORRECT",
+      "value": "INCORRECT",
+      "score": 0
+    }
+  },
+  {
+    "question": "RePaCA 通过什么方法来减轻 APR 补丁过拟合？",
+    "reference_answer": "通过思维链推理和基于 GRPO 的微调指导大语言模型。",
+    "rag_answer": "基于检索：  \nRePaCA 通过以下两种方法减轻 APR 补丁过拟合：  \n1. 思维链推理  \n2. 基于 GRPO 的微调  \n\n来源: 片段1, 片段2",
+    "source": "input/大推理模型强化学习综述7558735952418646874.pdf",
+    "evaluation": {
+      "reasoning": "CORRECT",
+      "value": "CORRECT",
+      "score": 1
+    }
+  },
+  {
+    "question": "哪篇论文提出了Seed diffusion模型，并强调了其高速推理的特点？",
+    "reference_answer": "Seed diffusion: A large-scale diffusion language model with high-speed inference. arXiv preprint arXiv:2508.02193, 2025c.",
+    "rag_answer": "基于检索：  \n根据提供的片段，论文《Seed diffusion: A large-scale diffusion language model with high-speed inference》（arXiv preprint arXiv:2508.02193, 2025c）提出了Seed diffusion模型，并强调了其高速推理的特点。作者列表包括Yuxuan Song, Zheng Zhang等研究人员。\n\n来源: 片段2",
+    "source": "input/大推理模型强化学习综述7558735952418646874.pdf",
+    "evaluation": {
+      "reasoning": "CORRECT",
+      "value": "CORRECT",
+      "score": 1
+    }
+  },
+  {
+    "question": "哪篇文献讨论了大型语言模型的高效推理方法，并发表于2025年？",
+    "reference_answer": "Stop overthinking: A survey on efficient reasoning for large language models (arXiv:2503.16419, 2025)。",
+    "rag_answer": "基于检索：  \n检索片段中提及了两篇2025年发表的文献，均涉及大型语言模型的高效推理方法：  \n\n1. **“Seed diffusion: A large-scale diffusion language model with high-speed inference.”**（arXiv:2508.02193, 2025c）——该文献聚焦于高速推理的扩散语言模型。  \n2. **“Drqa: Dynamic reasoning quota allocation for controlling overthinking in reasoning large language models.”**（arXiv:2508.17803, 2025b）——该文献提出动态推理配额分配方法，以控制推理型大语言模型的过度思考问题。  \n\n这两篇工作均从不同技术角度（模型架构优化与推理过程控制）探讨了提升大型语言模型推理效率的方案。  \n\n来源: 片段1, 片段4",
+    "source": "input/大推理模型强化学习综述7558735952418646874.pdf",
+    "evaluation": {
+      "reasoning": "INCORRECT",
+      "value": "INCORRECT",
+      "score": 0
+    }
+  },
+  {
+    "question": "根据片段，哪些研究提出了将SFT和RL整合为单阶段目标的框架？",
+    "reference_answer": "Liu et al. [2025k] 将 SFT 和 RL 整合为单阶段目标。",
+    "rag_answer": "基于检索：  \n根据提供的片段，以下研究提出了将监督微调（SFT）与强化学习（RL）整合为单阶段目标的框架：  \n\n- **Liu et al. [2025k]**：将 SFT 和 RL 整合为单阶段目标，理论上克服了长视野样本复杂性的瓶颈，并经验上证明了优于单独使用任一方法（片段3）。  \n- **Fu et al. [2025c]**：提出了使用熵感知权重的演示模仿（SFT）和策略改进（RL）的联合单阶段整合（片段3）。  \n- **Yan et al. [2025a]**、**Guan et al. [2025]** 和 **Ma et al. [2025a]** 等方法也通过创建统一或单阶段训练过程，同时从专家演示和 RL 反馈中学习（片段2、片段5）。  \n\n这些方法均属于**混合策略优化**趋势，通过损失级别结合 SFT 与 RL 目标，实现统一训练流程。  \n\n来源: 片段2, 片段3, 片段5",
+    "source": "input/大推理模型强化学习综述7558735952418646874.pdf",
+    "evaluation": {
+      "reasoning": "INCORRECT",
+      "value": "INCORRECT",
+      "score": 0
+    }
+  }
+]
