@@ -4,6 +4,7 @@ Shared helpers for building the RAG pipeline components.
 
 from __future__ import annotations
 
+import numpy_compat  # noqa: F401  # Ensures NumPy aliases exist before other imports.
 import json
 import logging
 import shutil
@@ -27,6 +28,32 @@ from rag_config import RAGSettings
 logger = logging.getLogger(__name__)
 
 
+class _BatchedEmbeddingWrapper:
+    """
+    Thin wrapper that chunks embed_documents calls to avoid exceeding provider limits.
+    """
+
+    def __init__(self, inner: OpenAIEmbeddings, batch_size: int):
+        self._inner = inner
+        self._batch_size = max(batch_size, 1)
+
+    def embed_documents(self, texts: List[str], **kwargs):
+        if not texts:
+            return []
+        results = []
+        for start in range(0, len(texts), self._batch_size):
+            chunk = texts[start : start + self._batch_size]
+            embeds = self._inner.embed_documents(chunk, **kwargs)
+            results.extend(embeds)
+        return results
+
+    def embed_query(self, text: str, **kwargs):
+        return self._inner.embed_query(text, **kwargs)
+
+    def __getattr__(self, item):
+        return getattr(self._inner, item)
+
+
 def create_llm_clients(settings: RAGSettings) -> Tuple[ChatOpenAI, OpenAIEmbeddings]:
     """Instantiate the chat and embedding clients based on the selected provider."""
     if not settings.chat_api_key:
@@ -34,17 +61,23 @@ def create_llm_clients(settings: RAGSettings) -> Tuple[ChatOpenAI, OpenAIEmbeddi
     if not settings.embedding_api_key:
         raise ValueError("Missing RAG_EMBEDDING_API_KEY environment variable.")
 
-    model = ChatOpenAI(
-        base_url=settings.chat_base_url or None,
-        api_key=settings.chat_api_key,
-        model=settings.chat_model,
-    )
+    chat_kwargs = {
+        "base_url": settings.chat_base_url or None,
+        "api_key": settings.chat_api_key,
+        "model": settings.chat_model,
+    }
+    if settings.chat_temperature is not None:
+        chat_kwargs["temperature"] = settings.chat_temperature
+    model = ChatOpenAI(**chat_kwargs)
     embeddings = OpenAIEmbeddings(
         base_url=settings.embedding_base_url or None,
         api_key=settings.embedding_api_key,
         model=settings.embedding_model,
     )
-    return model, embeddings
+    batched_embeddings = _BatchedEmbeddingWrapper(
+        embeddings, settings.embedding_batch_size
+    )
+    return model, batched_embeddings
 
 
 def connect_vectorstore(

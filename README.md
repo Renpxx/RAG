@@ -15,7 +15,9 @@
 | --- | --- | --- |
 | `RAG_API_TYPE` | 选择 openai/oneapi，仅用于日志标识 | `oneapi` |
 | `RAG_CHAT_BASE_URL` / `RAG_CHAT_API_KEY` / `RAG_CHAT_MODEL` | 对话模型配置 | —— |
+| `RAG_CHAT_TEMPERATURE` | 对话模型采样温度，部分模型仅接受 `1.0` | `1.0` |
 | `RAG_EMBEDDING_BASE_URL` / `RAG_EMBEDDING_API_KEY` / `RAG_EMBEDDING_MODEL` | 向量模型配置，未显式设置时沿用对话配置 | —— |
+| `RAG_EMBEDDING_BATCH_SIZE` | 向量化请求的批大小，防止一次请求超出 token 上限 | `32` |
 | `RAG_VECTOR_DIR` / `RAG_COLLECTION` | Chroma 持久化目录与集合名 | `chromaDB` / `technical_docs` |
 | `RAG_INPUT_DIR` | 原始资料目录 | `input` |
 | `RAG_URL_MANIFEST` | 额外 URL 清单文件路径，可选 | 自动检测 `input/urls.txt` |
@@ -38,3 +40,28 @@
 2. **灌库**：执行 `python build_vectorstore.py`（默认会清空旧库，可通过 `--no-reset` 追加）。脚本会自动调用 `DocumentIngestor` 完成解析 → 分块 → 向量化。
 3. **启动服务**：执行 `python main.py`，FastAPI 会初始化模型、加载 Chroma，并暴露 OpenAI 风格接口。可通过 `python test_local_api.py --question "..."` 本地验证接口，也可使用任意 OpenAI SDK。
 4. **综合评测**：执行 `python evaluate_rag.py --samples 10` 可生成评测报告，内容包含自动构造的问题、标准答案、RAG 回答、LLM 评分与推理说明，便于快速定位薄弱环节。
+
+## 0.3 问题集对比测试
+若需要针对固定问题集评估“模型回答 vs. 参考答案”的吻合程度，可执行：
+
+```bash
+python test/run_question_evals.py --limit 10 --chat-model gpt-5-nano
+```
+
+- 默认问题来源于 `test/question.json`，生成结果写入 `test/rag_vs_baseline_results.json`，其中包含候选回答/基准回答与参考答案的相似度分数。
+- 同时在 `test/rag_vs_baseline_comparison.png` 输出堆叠条形图，展示“候选更接近 / 平局 / 基准更接近”的比例，可一眼比较不同模型表现。
+- 可通过 `--candidate-label/--baseline-label` 自定义图表文案，或使用 `--limit` 做快速抽样；若问题较多，可追加 `--concurrency 4` 等参数并行执行。
+- 若想一次对多个模型生成类似“胜/负/平”堆叠条形图，可直接添加 `--chat-models gpt-5-nano,ark-doubao-...,gpt-4o-mini`；此时每个模型的 JSON 会自动带 `_模型名` 后缀，图表会在同一张图上按行展示各模型表现。也可以执行 `./scripts/run_multi_model_evals.sh`（可用 `LIMIT=5 ./scripts/run_multi_model_evals.sh` 快速抽样）按脚本方式批量运行。
+- 需要事后汇总多个 JSON 并重新绘制对比图时，可运行 `python test/aggregate_results.py --results test/rag_vs_baseline_results_*.json`（支持任意结果文件列表），脚本会自动读取各模型的胜/平/负次数并生成新的 `test/rag_vs_baseline_comparison.png`。
+
+## 0.4 依赖安装小贴士
+- 建议使用 Conda 为该项目单独创建虚拟环境，推荐 Python 3.10（经验证最兼容当前依赖），示例：
+  ```bash
+  conda create -n rag-docs python=3.10 -y
+  conda activate rag-docs
+  pip install --upgrade pip
+  pip install -r requirements.txt
+  ```
+- `requirements.txt` 中已显式锁定 `langchain-core==0.2.43`、`langchain-community==0.2.11`、`requests==2.32.3` 等版本，可避免 `langchain-classic 1.x`、`langchain-community 0.4.x` 等最新包对 `langchain-core>=1.0.0` 的需求冲突。
+- 若系统自带的 NumPy 升级到 2.x，`chromadb` 仍会引用被移除的 `np.float_` 等别名。仓库自带的 `numpy_compat.py` 会在导入 `rag_pipeline` 时自动补齐这些别名，无需手动降级 NumPy；如需在其他脚本中单独访问 `chromadb`，记得先 `import numpy_compat` 以启用补丁。
+- 若历史环境仍提示 “langchain-classic 1.0.0 requires langchain-core>=1.0.0” 等信息，可先执行 `pip uninstall langchain-classic langchain-community`，再重新安装依赖。
