@@ -89,11 +89,11 @@ def load_settings() -> RAGSettings:
     settings = RAGSettings(
         api_type=_env("RAG_API_TYPE", "openai"),
         chat_base_url=_env("RAG_CHAT_BASE_URL", "https://c-z0-api-01.hash070.com/v1"),
-        chat_api_key=_env("RAG_CHAT_API_KEY", "sk-EBQ6TPQNd1608E1b30a0T3BLbKFJ3a5A906c92794460a310"),
+        chat_api_key=_env("RAG_CHAT_API_KEY", "*"),
         chat_model=_env("RAG_CHAT_MODEL", "gpt-5-nano"),
         chat_temperature=_env_float("RAG_CHAT_TEMPERATURE", 1.0),
         embedding_base_url=_env("RAG_EMBEDDING_BASE_URL", _env("RAG_CHAT_BASE_URL", "https://c-z0-api-01.hash070.com/v1")),
-        embedding_api_key=_env("RAG_EMBEDDING_API_KEY", _env("RAG_CHAT_API_KEY", "sk-EBQ6TPQNd1608E1b30a0T3BLbKFJ3a5A906c92794460a310")),
+        embedding_api_key=_env("RAG_EMBEDDING_API_KEY", _env("RAG_CHAT_API_KEY", "*")),
         embedding_model=_env("RAG_EMBEDDING_MODEL", "text-embedding-3-small"),
         embedding_batch_size=_env_int("RAG_EMBEDDING_BATCH_SIZE", 32),
         prompt_template_path=_env("RAG_PROMPT_TEMPLATE", "prompt_template.txt"),

@@ -45,12 +45,14 @@
 若需要针对固定问题集评估“模型回答 vs. 参考答案”的吻合程度，可执行：
 
 ```bash
-python test/run_question_evals.py --limit 10 --chat-model gpt-5-nano
+python test/run_question_evals.py --limit 20 \
+  --chat-models gemini-2.0-flash-lite \
+  --concurrency 10
 ```
 
-- 默认问题来源于 `test/question.json`，生成结果写入 `test/rag_vs_baseline_results.json`，其中包含候选回答/基准回答与参考答案的相似度分数。
+- 默认问题来源于 `test/question.json`，生成结果写入 `test/rag_vs_baseline_results_gemini-2-0-flash-lite.json`（或其他模型名称对应的文件），其中包含候选回答/基准回答与参考答案的相似度分数。
 - 同时在 `test/rag_vs_baseline_comparison.png` 输出堆叠条形图，展示“候选更接近 / 平局 / 基准更接近”的比例，可一眼比较不同模型表现。
-- 可通过 `--candidate-label/--baseline-label` 自定义图表文案，或使用 `--limit` 做快速抽样；若问题较多，可追加 `--concurrency 4` 等参数并行执行。
+- 可通过 `--candidate-label/--baseline-label` 自定义图表文案，或使用 `--limit` 做快速抽样；若问题较多，可追加 `--concurrency 4`（或更大）参数并行执行。
 - 若想一次对多个模型生成类似“胜/负/平”堆叠条形图，可直接添加 `--chat-models gpt-5-nano,ark-doubao-...,gpt-4o-mini`；此时每个模型的 JSON 会自动带 `_模型名` 后缀，图表会在同一张图上按行展示各模型表现。也可以执行 `./scripts/run_multi_model_evals.sh`（可用 `LIMIT=5 ./scripts/run_multi_model_evals.sh` 快速抽样）按脚本方式批量运行。
 - 需要事后汇总多个 JSON 并重新绘制对比图时，可运行 `python test/aggregate_results.py --results test/rag_vs_baseline_results_*.json`（支持任意结果文件列表），脚本会自动读取各模型的胜/平/负次数并生成新的 `test/rag_vs_baseline_comparison.png`。
 
