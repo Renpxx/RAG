@@ -1,0 +1,82 @@
+[
+  {
+    "question": "论文为什么认为现有 RLHF 系统在效率与灵活性方面存在不足？",
+    "answer": "论文指出现有 RLHF 系统多采用 multi-controller（多控制器）范式，使得模型间的数据依赖和计算耦合在一起。这样导致：①实现不同 RLHF 数据流图不灵活，需要为每个算法重新写通信和调度逻辑；②难以复用已有 LLM 训练/推理框架；③控制结构复杂、跨模型通信开销大。此外，重量级 LLM 训练在 multi-controller 控制下会产生额外调度成本，影响整体效率。"
+  },
+  {
+    "question": "HybridFlow 提出的混合式编程模型的核心思想是什么？",
+    "answer": "HybridFlow 采用 single-controller 与 multi-controller 的层级混合策略：在节点间使用 single-controller 统一调度 RLHF 数据流图（灵活表达数据依赖）；在节点内使用 multi-controller 高效执行分布式 LLM（如 3D parallelism）。这种方式让每个模型节点只关心自身计算，跨节点的数据交换由单一控制器协调，从而获得更高灵活性与效率。"
+  },
+  {
+    "question": "HybridFlow 如何同时提升效率（efficient）和灵活性（flexible）？",
+    "answer": "效率方面：HybridFlow 的 3D-HybridEngine 对 actor 模型在训练与生成阶段使用不同并行策略并实现“零冗余”模型重新分 shard，显著减少通信和额外内存。灵活性方面：层级 API 解耦分布式计算和数据依赖，使用户可用几行代码表达 PPO、ReMax、Safe-RLHF 等不同 RLHF 算法，而无需改底层分布式逻辑。同时支持多种模型放置方式（不同设备组合）。"
+  },
+  {
+    "question": "HybridFlow 如何定义并使用 transfer protocol（数据传输协议）实现不同模型间的数据重分片（resharding）？",
+    "answer": "每个模型 API（如 compute_values、generate_sequences）均注册对应 transfer protocol，其包含 collect 与 distribute 两步：collect 聚合源模型输出，distribute 将数据按目标模型 3D 并行策略分发到正确 GPU 上。由于由单一控制器调度，跨模型通信不需要手写 send/recv，可在多种并行策略（3D、ZeRO、FSDP）下统一正常工作。"
+  },
+  {
+    "question": "HybridFlow 的预训练和 RLHF 计算 API 与传统框架（如 DeepSpeed-Chat）相比有什么优势？",
+    "answer": "HybridFlow 的 API 设计提供模型级封装（如 actor.update_actor、critic.compute_values），用户只需写 RLHF 算法逻辑，不必处理底层通信、同步、并行组构建。而传统多控制器 RLHF（如 DeepSpeed-Chat、OpenRLHF）则需要在每个 worker 程序里显式编写网络通信、all_gather、发送/接收逻辑，使代码难以复用和维护。"
+  },
+  {
+    "question": "HybridFlow 为什么特别设计 3D-HybridEngine？",
+    "answer": "因为 RLHF 中 actor 的训练与生成具有完全不同的并行需求：训练计算密集，需更大 TP/PP；生成内存约束且多步自回归，需更多 DP。传统方式需在两个阶段重复复制模型或大量通信恢复模型权重。3D-HybridEngine 允许训练与生成使用完全不同的 3D 并行组配置，同时通过优化的分组方式实现零冗余 resharding，大幅降低通信与内存浪费。"
+  },
+  {
+    "question": "为什么 HybridFlow 的 actor 训练与生成可以做到“零冗余”模型重分片？",
+    "answer": "论文提出新的并行分组策略：训练阶段使用 p-t-d 组，而生成阶段使用 pg-tg-dg-d 组。通过特殊排列方式保证每块训练权重和生成权重都在同一 GPU 上有覆盖，使得生成阶段无需额外存储训练版模型副本，也不需全量 all-gather 模型权重，从而实现零冗余与最低通信成本（相比 DeepSpeed-Chat、OpenRLHF）。"
+  },
+  {
+    "question": "HybridFlow 在没有对比学习或强化学习算法本身修改的情况下，如何支持 PPO、ReMax、Safe-RLHF 多种 RLHF 算法？",
+    "answer": "因为 HybridFlow 将“分布式计算逻辑”与“算法数值逻辑”完全分离，算法开发者只需组合 API：如 PPO 的 compute_values、compute_advantage、update_actor；Safe-RLHF 多加 cost model；ReMax 增加一次 actor 生成。无需改分布式框架，也不影响并行策略或设备放置。"
+  },
+  {
+    "question": "论文是否使用对比学习或序列预测作为 RLHF 的核心？",
+    "answer": "没有。HybridFlow 关注的是 RLHF 的系统执行框架，而不是新的 RLHF 目标函数。它支持现有 RLHF 算法如 PPO、ReMax、Safe-RLHF，但不涉及 contrastive learning 或自监督任务设计。重点在于高效执行 RLHF 数据流图。"
+  },
+  {
+    "question": "HybridFlow 如何在训练时保证计算的高效性？",
+    "answer": "主要措施包括：①使用 3D 并行（TP, PP, DP）加速 actor 和 critic 训练；②actor 重分片不产生模型复制成本；③单控制器统一调度跨节点通信减少调度复杂度；④自动设备映射算法选择最优模型放置方案，最大化 GPU 利用率。"
+  },
+  {
+    "question": "论文中 HybridFlow 在哪些 RLHF 算法上取得性能提升？",
+    "answer": "论文实验覆盖 PPO、Safe-RLHF、ReMax 等 RLHF 算法，并在所有测试中相比 DeepSpeed-Chat、OpenRLHF、NeMo-Aligner 获得 1.53× 至 20.57× 吞吐量提升。"
+  },
+  {
+    "question": "Actor、Critic、Reference、Reward 模型在 HybridFlow 训练和评估中的作用是什么？",
+    "answer": "Actor：负责生成响应并通过 PPO 更新策略。Critic：评估响应的 value。Reference：提供参考策略 log-prob 供 KL penalty 使用。Reward 模型：对生成内容打分。HybridFlow 支持它们采用不同并行策略和不同 GPU 放置。"
+  },
+  {
+    "question": "论文如何验证 HybridFlow 的高效性？",
+    "answer": "通过大量实验比较吞吐量、训练迭代时间、通信量与显存占用。论文显示：使用 3D-HybridEngine 可显著减少迁移开销，而自动设备映射能有效提升 GPU 利用率。总体性能可提升 1.53×～20.57×。"
+  },
+  {
+    "question": "HybridFlow 与 DeepSpeed-Chat、OpenRLHF、NeMo-Aligner 相比的主要性能差异？",
+    "answer": "HybridFlow：支持灵活模型放置、混合控制器结构、零冗余权重重分片、不同生成/训练并行策略。DeepSpeed-Chat：固定放置，需全量 all-gather 权重。OpenRLHF：训练与生成使用两份模型副本，内存浪费严重。NeMo-Aligner：训练与生成使用相同 3D 并行，生成性能受限。HybridFlow 在吞吐量上最高。"
+  },
+  {
+    "question": "论文的消融实验（Ablation Study）表明哪些模块贡献最大？",
+    "answer": "主要贡献来自：①3D-HybridEngine 的零冗余 resharding；②优化后的 parallel grouping；③自动设备映射器的 placement 优化；④transfer protocol 机制。特别是 3D-HybridEngine 对性能提升最显著。"
+  },
+  {
+    "question": "HybridFlow 是否需要外部硬件（如 IMU）或额外传感器？",
+    "answer": "不需要。HybridFlow 是一个 RLHF 分布式训练系统，与感知任务无关，因此不涉及 IMU 或其他传感器。其输入都是文本和模型参数。"
+  },
+  {
+    "question": "HybridFlow 在极大规模模型或大规模集群中是否仍然稳定？",
+    "answer": "论文显示其在包含数十到数百 GPU 的集群上运行稳定，且单控制器的调度开销相对模型计算量是可忽略的。通信设计对 70B 模型仍然高效，但极端超大模型可能需要进一步测试。"
+  },
+  {
+    "question": "作者如何证明 HybridFlow 具有更好的泛化能力？",
+    "answer": "HybridFlow 不是模型，而是一个系统框架，因此“泛化”指框架支持不同 RLHF 算法、不同并行策略、不同 GPU 拓扑和不同模型大小，并在这些场景都表现良好。论文通过在多算法、多模型尺寸、多 GPU 配置中重复实验来验证其通用性。"
+  },
+  {
+    "question": "论文中是否分析了 HybridFlow 在实际部署或生产环境使用的可行性？",
+    "answer": "论文强调 HybridFlow 与现有 LLM 训练系统（Megatron-LM、FSDP、ZeRO）兼容，可直接集成。其混合控制结构也适合生产中的 RLHF pipeline。但论文未报道真实线上部署实验。"
+  },
+  {
+    "question": "HybridFlow 的局限性是什么？",
+    "answer": "局限包括：①需要用户选择并行策略和资源映射（虽有自动映射，但仍需人工指定搜索空间）；②只优化 RLHF 数据流，不直接优化 RL 算法本身；③对极端超大规模模型的表现需进一步验证。作者计划进一步优化映射算法、支持更多并行策略、以及在更大集群上评估稳定性。"
+  }
+]
